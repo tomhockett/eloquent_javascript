@@ -429,3 +429,186 @@ var landscape = function() {
 
 console.log(landscape());
 // -> ___/````\______/`\_
+
+// The set of variables visable inside a function is
+// determined by the place of that function in the program
+// text.
+
+// Lexical Scoping - all variables inside a funciton AND
+// variables at the top level of the program are visable
+// to the function.
+
+// In JavaScript, functions are the only things that create
+// a new scope.  You are allowed to use free-standing blocks.
+
+var something = 1;
+{
+  var something = 2;
+  // Do stuff with variable something . . .
+}
+// Outside of the block again . . .
+console.log(something); // 2
+
+// ES6 using let . . .
+let somethingElse = 1;
+{
+  let somethingElse = 2;
+}
+console.log(somethingElse); // 1
+
+// DECLARATION NOTATION
+// The function keyword can also be used at the start of a
+// statement, as in the following:
+function square(x) {
+  return x * x;
+}
+// This is a function declaration.  The statement defines
+// the variable square and points it at the given function.
+console.log("The future says:", future());
+
+function future() {
+  return "We STILL have no flying cars.";
+}
+// This code works, even though the function is defined below
+// the code that uses it.  This is because function declarations
+// are not part of the regular top-to-bottom flow of control.
+// They are conceptually moved to the top of their scope and
+// can be used by all the code in that scope.
+
+// THE CALL STACK
+function greet(who) {
+  console.log("Hello " + who);
+}
+greet("Harry");
+console.log("Bye");
+// "A call to greet causes control to jump to the start of
+// that function (line 479). It calls 'console.log' ( a built
+// in browser function), which takes control, does its job,
+// and then returns control to line 479. Then it reaches the 
+// end of the greet function, so it returns to the place that
+// called it, at line 482."
+
+// Because a funciton has to jump back to the place of the call
+// when it returns, the computer must remember the context from
+// which the function was called.
+
+// The place where the computer stores this context is called
+// the CALL STACK.  Every time a function is called, the current
+// context is put on top of this "stack". When the function
+// returns, it removes the top context from the stack and uses
+// it to continue execution.
+
+// Storing this stack requres space in the computer's memory.
+// When the stack grows too big, the computer will fail with
+// a message like "out of stack space", or "too much recursion."
+function chicken() {
+  return egg();
+}
+function egg() {
+  return chicken();
+}
+console.log(chicken() + " came first.");
+// -> "Maximum call stack size exceeded"
+
+// OPTIONAL ARGUMENTS
+alert("Hello", "Good Evening", "How do you do?");
+// -> Browser outputs only "Hello"
+
+// The function alert officially accepts only one argument.
+// Yet when you call it like this, it doesn't complain. It
+// simply ignores the other arguments and shows you "Hello".
+
+// JavaScript is extreamly broad-minded about the number of
+// arguments you pass to a function.  If you pass too many,
+// the extra ones are ignored. If you pass too few, the missing
+// parameters simply get assigned the value 'undefined.'
+
+// Bad news: you can pass the wrong number of args and no one
+// will tell you about it.
+
+// Good news: you can make a funciton that takes "optional"
+// arguments.
+function power(base, exponent) {
+  if (exponent == undefined)
+    exponent = 2;
+  var result = 1;
+  for (var count = 0; count < exponent; count++)
+    result *= base;
+  return result;
+}
+
+console.log(power(4)); // -> 16
+console.log(power(4, 3)); // -> 64
+
+
+// CLOSURE
+// What happens to local variables when the funciton call
+// that created them is no longer active?
+
+// Ex. This code defines a function, wrapValue, which creates
+// a local variable. It then returns a funciton that accesses
+// and returns this local variable.
+function wrapValue(n) {
+  var localVariable = n;
+  return function() { return localVariable; };
+}
+
+var wrap1 = wrapValue(1);
+var wrap2 = wrapValue(2);
+console.log(wrap1()); // -> 1
+console.log(wrap2()); // -> 2
+
+// being able to reference a specific instance of local
+// variables in an enclosing function is called "closure".
+// A function that "closes over" some local variables is
+// called "a closure." This behavior not only frees you 
+// from having to worry about lifetimes of variables but
+// also allows for some creative use of funciton values.
+function multiplier(factor) {
+  return function(number) {
+    return number * factor;
+  };
+}
+
+var twice = multiplier(2);
+console.log(twice(5)); // -> 10
+
+// The explicit localVariable from the wrapValue example
+// isn't needed since a parameter is itself a local variable.
+
+// A good mental model is to think of the function keyword
+// as "freezing" the code in its body and wrapping it into
+// a package (the funciton value). So when you read 'return
+// function(...){...},' think of it as returning a handle
+// to a piece of computation, frozen for later use.
+
+// In the example, 'multiplier' returns a frozen chunk of
+// code that gets stored in the 'twice' variable. The last
+// line then calls the value in this variable, causing
+// the frozen code (return number * factor;) to be activated.
+// It still has access to the 'factor' variable from the
+// multiplier call that created it, and in addition it gets
+// access to the argument passed when unfreezing it, 5,
+// through its 'number' parameter.
+
+// RECURSION
+// It is perfectly okay for a function to call itslef, as
+// long as it takes care not to overflow the stack.
+// A function that calls itself is called 'recursive.'
+function power(base, exponent) {
+  if (exponent == 0)
+    return 1;
+  else return base * power(base, exponent - 1);
+}
+
+console.log(power(2, 3)); // -> 8
+
+// This function calls itself multiple times with different
+// arguments to achieve the repeated multiplication.
+// * Running through a simple loop is a lot cheaper than
+// calling a function multiple times.*
+
+// RULE OF THUMB: don't worry about efficiency until you 
+// know for sure that the program is too slow.  If it is, 
+// find out which parts are taking up the most time, and 
+// start exchanging elegance for efficiency in those parts.
